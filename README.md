@@ -1,30 +1,11 @@
 # snyk-arbitrary-tag-tool
 
-## Sample Data
-
-The sample data folder includes examples of the input files:
-
-* projects-example.json is created by querying the snyk api for a list of projects in an org
-* bitbucket-cloud-import-targets.json is created using the snyk api import tool
-
-The sample data also includes the target output format:
-
-* tag-array-example.json
-
-The goal is to transform the inputs into the output
-
 ## Environment Set Up and Dependencies
 
 **Dependencies**
 
 NPM
 node.js
-
-dotenv: manages environment variables
-
-```shell
-npm i dotenv
-```
 
 **Environment Configuration**
 
@@ -44,3 +25,11 @@ echo "API=<your-api-key>">>.env
 touch .gitignore
 echo ".env">>.gitignore
 ```
+
+## Input Data
+
+The primary input data is generated as output from the "mirror project" workflow on the Snyk API Import tool: https://github.com/gwnlng/snyk-api-import
+
+* bitbucket-cloud-import-targets.json is created using the snyk api import tool
+
+The sample_data directory includes a file named bitbucket-cloud-import-targets.json You must replace this file with your output file of the same name.
