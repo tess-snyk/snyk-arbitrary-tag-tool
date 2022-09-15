@@ -5,7 +5,7 @@
 The sample data folder includes examples of the input files:
 
 * projects-example.json is created by querying the snyk api for a list of projects in an org
-* targets-example.json is created using the snyk api import tool
+* bitbucket-cloud-import-targets.json is created using the snyk api import tool
 
 The sample data also includes the target output format:
 
@@ -13,14 +13,26 @@ The sample data also includes the target output format:
 
 The goal is to transform the inputs into the output
 
-## Data Transformation
+## Environment Set Up and Dependencies
 
-**Transform targets**
+**Dependencies**
 
-targets-example.json is the output of running the API import tool. The below jq query transforms this data into a list of the tag names to be applied listed with their corresponding org.
+NPM
+node.js
 
-Extract org ID and Target name (tag) from targets-example.json
+dotenv: manages environment variables
 
 ```shell
-jq '.targets | map(.) | .[] | {name: .target.name, orgId}' targets-example.json
+npm install dotenv
 ```
+
+**Environment Configuration**
+
+Set enironment variables .env saved to the .gitignore file
+
+* Clone this repository to a local directory:
+
+```shell
+git clone https://github.com/tess-snyk/snyk-arbitrary-tag-tool.git
+```
+
