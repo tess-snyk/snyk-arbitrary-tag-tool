@@ -1,5 +1,21 @@
 # snyk-arbitrary-tag-tool
 
+## Use Case
+
+This tool is designed to tag any Snyk Project related to a specific application service with a common tag.
+
+"As a Tech Lead I want to apply the tag 'Service 1' to all Snyk Projects that are related to that service. The tag should be applied regardless of the Target (SCM, CI, CR) and regardless of the project type (code, open source, container or IaC"
+
+This version of the tool makes the assumption that all projects related to a given application contain an identifying string in "Project Name" that is equal to the SCM repository name.
+
+The tool performs the following:
+
+1. Identify a list of unique applications by the list of repositories scanned using the API Import tool and the Snyk Organisations that scans were sent to. Transform this to a list of tags related to each Organisation
+2. List all projects in the Organisations that have received any new projects in the API Import, extracting Project Name, Project ID, and Org ID
+3. Iterate through a search for a string matching each tag name in each project and where there is a match, apply the tag using the Snyk API
+
+See "Limitations"
+
 ## Environment Set Up and Dependencies
 
 **Dependencies**
@@ -33,3 +49,11 @@ The primary input data is generated as output from the "mirror project" workflow
 * bitbucket-cloud-import-targets.json is created using the snyk api import tool
 
 The sample_data directory includes a file named bitbucket-cloud-import-targets.json You must replace this file with your output file of the same name.
+
+## Limitations
+
+* Snyk API rate limit 2000 / minute
+* Total unique key:value tags per Group = 1000
+* Dependent on finding an exact match of the intended tag within project name
+* Initially dataset based on recently uploaded projects (to be updated for ongoing operations)
+* Manual trigger - to be automated for prod
