@@ -48,7 +48,31 @@ The primary input data is generated as output from the "mirror project" workflow
 
 * bitbucket-cloud-import-targets.json is created using the snyk api import tool
 
-The sample_data directory includes a file named bitbucket-cloud-import-targets.json You must replace this file with your output file of the same name.
+The sample_data directory includes a file named bitbucket-cloud-import-targets.json You must replace this file with your output file from the API-Import tool keeping the same name.
+
+## Run in Demo Mode
+
+Demo mode requires updating the main.js file to remove comments in the following order
+
+```
+//Step 1: Check tags and then apply tags
+//Remove comments from the following two lines:
+
+//logAllProjectsByOrg(uniqueOrgIds)
+//setAllTags(tagsArray)
+
+//Step 2: Confirm tags were applied
+//Remove comments from the following line:
+//logAllProjectsByOrg(uniqueOrgIds)
+
+//Step 3: Remove tags
+//Remove comments from the following line:
+// removeAllTags(tagsArray)
+```
+
+## Run with CLI tool
+
+Work in progress as of 16 Sept 2022
 
 ## Limitations
 
@@ -56,4 +80,4 @@ The sample_data directory includes a file named bitbucket-cloud-import-targets.j
 * Total unique key:value tags per Group = 1000
 * Dependent on finding an exact match of the intended tag within project name
 * Initially dataset based on recently uploaded projects (to be updated for ongoing operations)
-* Manual trigger - to be automated for prod
+* Run in demo mode only until this page is updated

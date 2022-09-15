@@ -249,11 +249,24 @@ function logAllProjectsByOrg(uniqueOrgIds) {
   }
 }
 
-// logAllProjectsByOrg(uniqueOrgIds)
+//Step 1: Check tags and then apply tags
+//Remove comments from the following two lines:
 
+//logAllProjectsByOrg(uniqueOrgIds)
+//setAllTags(tagsArray)
+
+//Step 2: Confirm tags were applied
+//Remove comments from the following line:
+//logAllProjectsByOrg(uniqueOrgIds)
+
+//Step 3: Remove tags
+//Remove comments from the following line:
+// removeAllTags(tagsArray)
+
+//List of available commands:
 // console.log(tagsArray.length)
 // console.log(projectsByOrgArr[0].projects.length)
-// setAllTags(tagsArray)
+//setAllTags(tagsArray)
 // console.log(uniqueOrgIds)
 // removeAllTags(tagsArray)
 // removeTag(oneTagObj)
