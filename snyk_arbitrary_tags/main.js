@@ -6,7 +6,7 @@ const snykAPIurl = 'https://api.snyk.io/api/v1/org/'
 const ORG_ID = process.env.ORG_ID
 const AUTH_TOKEN = process.env.TOKEN
 
-const targetsArrayJSON = require('./sample_data/targets-example.json')
+const targetsArrayJSON = require('./sample_data/bitbucket-cloud-import-targets.json')
 const projectsObjJSON = require('./sample_data/projects-example.json')
 
 //the writeProjectsData writes all projects data into a JSON file. This output
