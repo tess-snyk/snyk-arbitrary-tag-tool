@@ -1,5 +1,18 @@
 # snyk-arbitrary-tag-tool
 
+## Sample Data
+
+The sample data folder includes examples of the input files:
+
+* projects-example.json is created by querying the snyk api for a list of projects in an org
+* targets-example.json is created using the snyk api import tool
+
+The sample data also includes the target output format:
+
+* tag-array-example.json
+
+The goal is to transform the inputs into the output
+
 ## Data Transformation
 
 **Transform targets**
