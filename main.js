@@ -8,6 +8,61 @@ const AUTH_TOKEN = process.env.TOKEN
 
 const targetsArrayJSON = require('./sample_data/bitbucket-cloud-import-targets.json')
 const projectsObjJSON = require('./sample_data/projects-example.json')
+const projectsByOrgArrayJSON = require('./projectsByOrg.json')
+
+//These lines simply remove the outer curly brackets from the JSON data, returning
+//arrays instead of objects
+projectsArr = projectsObjJSON.projects
+targetsArr = targetsArrayJSON.targets
+projectsByOrgArr = projectsByOrgArrayJSON.projectsByOrgArray
+
+function getUniqueOrgIds(targetsArr) {
+  const allOrgIds = targetsArr.map((target) => target.orgId)
+  return Array.from(new Set(allOrgIds))
+}
+
+const uniqueOrgIds = getUniqueOrgIds(targetsArr)
+
+function writeProjectsByOrgJSON(uniqueOrgIds) {
+  const arrayOfPromises = uniqueOrgIds.map((orgID) => {
+    return request
+      .get(`${snykAPIurl}${orgID}/projects`)
+      .set({
+        Authorization: AUTH_TOKEN,
+        'Content-Type': 'application/json',
+      })
+      .then((response) => response.body)
+  })
+
+  return Promise.allSettled(arrayOfPromises).then((result) => {
+    const projectsByOrg = result.map((el) => ({
+      org: el.value.org,
+      projects: el.value.projects,
+    }))
+
+    const projectsByOrgObj = { projectsByOrgArray: projectsByOrg }
+    try {
+      fs.writeFileSync('projectsByOrg.json', JSON.stringify(projectsByOrgObj))
+    } catch (err) {
+      console.error(err)
+    }
+    return projectsByOrgObj
+  })
+}
+
+writeProjectsByOrgJSON(uniqueOrgIds)
+
+function getProjectsData() {
+  return request
+    .get(`${snykAPIurl}${ORG_ID}/projects`)
+    .set({
+      Authorization: AUTH_TOKEN,
+      'Content-Type': 'application/json',
+    })
+    .then((response) => {
+      response.body
+    })
+}
 
 //the writeProjectsData writes all projects data into a JSON file. This output
 //should take the place of the projects-example.json file
@@ -28,11 +83,6 @@ function writeProjectsData() {
       return
     })
 }
-
-//These lines simple remove the outer brackets from the JSON data, returning
-//arrays
-projectsArr = projectsObjJSON.projects
-targetsArr = targetsArrayJSON.targets
 
 //Focusing in on the relevant targets data
 function getNameAndOrgID(target) {
@@ -63,15 +113,49 @@ function simplifyProjectsArr(projectsArr) {
   return output
 }
 
+function simplifyProjectsByOrgArr(projectsByOrgArr) {
+  const output = projectsByOrgArr.map((orgObj) => ({
+    ...orgObj,
+    projects: simplifyProjectsArr(orgObj.projects),
+  }))
+  return output
+}
+
 const simpleTargetsArr = simplifyTargetsArr(targetsArr)
 const simpleProjectsArr = simplifyProjectsArr(projectsArr)
+const simpleProjectsByOrgArr = simplifyProjectsByOrgArr(projectsByOrgArr)
 
 //The combineTargetProjects combines the data we need from the two sources into
 //a structure that the setAllTags function can use
-function combineTargetsProjects(targetsArr, projectsArr) {
+// function combineTargetsProjects(targetsArr, projectsArr) {
+//   let tagsArray = []
+//   for (const targetEl of targetsArr) {
+//     const matchingProjects = projectsArr.filter((projEl) =>
+//       projEl.name.includes(targetEl.name)
+//     )
+//     //round brackets used around the map function body so JS doesn't get
+//     //confused between a returned object and a function body
+//     const partialTagsArray = matchingProjects.map((projEl) => ({
+//       ...projEl,
+//       org_id: targetEl.orgId,
+//       tag: {
+//         key: 'service',
+//         value: targetEl.name,
+//       },
+//     }))
+//     tagsArray.push(...partialTagsArray)
+//   }
+//   return tagsArray
+// }
+
+function combineTargetsProjects(simpleTargetsArr, simpleProjectsByOrgArr) {
   let tagsArray = []
-  for (targetEl of targetsArr) {
-    const matchingProjects = projectsArr.filter((projEl) =>
+  for (const targetEl of simpleTargetsArr) {
+    const matchingOrgsProjObj = simpleProjectsByOrgArr.find(
+      (el) => el.org.id === targetEl.orgId
+    )
+    const matchingOrgsProjArr = matchingOrgsProjObj.projects
+    const matchingProjects = matchingOrgsProjArr.filter((projEl) =>
       projEl.name.includes(targetEl.name)
     )
     //round brackets used around the map function body so JS doesn't get
@@ -89,9 +173,13 @@ function combineTargetsProjects(targetsArr, projectsArr) {
   return tagsArray
 }
 
-const tagsArray = combineTargetsProjects(simpleTargetsArr, simpleProjectsArr)
+// function combineTargetProjectsByOrg()
 
-console.log(tagsArray)
+const tagsArray = combineTargetsProjects(
+  simpleTargetsArr,
+  simpleProjectsByOrgArr
+)
+
 //Functions to enable setting tags through the API.
 
 function setTag({ org_id, project_id, tag }) {
@@ -117,14 +205,13 @@ function removeTag({ org_id, project_id, tag }) {
 }
 
 function setAllTags(tagsArray) {
-  for (tagObj of tagsArray) {
-    console.log(tagObj)
+  for (const tagObj of tagsArray) {
     setTag(tagObj)
   }
 }
 
 function removeAllTags(tagsArray) {
-  for (tagObj of tagsArray) {
+  for (const tagObj of tagsArray) {
     removeTag(tagObj)
   }
 }
@@ -142,19 +229,32 @@ function logOneProject({ org_id, project_id, tag }) {
     .then((response) => console.log(response.body))
 }
 
-function logAllProjects() {
+function logAllProjects(orgID) {
   return request
-    .get(`${snykAPIurl}${ORG_ID}/projects`)
+    .get(`${snykAPIurl}${orgID}/projects`)
     .set({
       Authorization: AUTH_TOKEN,
       'Content-Type': 'application/json',
     })
-    .then((response) => console.log(response.body))
+    .then((response) => {
+      console.log(`============== PROJECTS FOR ORG ID: ${orgID} ==============`)
+      console.log(response.body)
+    })
 }
 
-// console.log(tagsArray)
+function logAllProjectsByOrg(uniqueOrgIds) {
+  for (const orgID of uniqueOrgIds) {
+    console.log(orgID)
+    logAllProjects(orgID)
+  }
+}
+
+// logAllProjectsByOrg(uniqueOrgIds)
+
+// console.log(tagsArray.length)
+// console.log(projectsByOrgArr[0].projects.length)
 // setAllTags(tagsArray)
-// logAllProjects()
+// console.log(uniqueOrgIds)
 // removeAllTags(tagsArray)
 // removeTag(oneTagObj)
 // writeProjectsData() logOneProject(oneTagObj) setAllTags(shortTagsArray)
