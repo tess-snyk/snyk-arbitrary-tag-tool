@@ -261,7 +261,7 @@ function logAllProjectsByOrg(uniqueOrgIds) {
 
 //Step 3: Remove tags
 //Remove comments from the following line:
-// removeAllTags(tagsArray)
+//removeAllTags(tagsArray)
 
 //List of available commands:
 // console.log(tagsArray.length)
@@ -270,4 +270,4 @@ function logAllProjectsByOrg(uniqueOrgIds) {
 // console.log(uniqueOrgIds)
 // removeAllTags(tagsArray)
 // removeTag(oneTagObj)
-// writeProjectsData() logOneProject(oneTagObj) setAllTags(shortTagsArray)
+//writeProjectsData() logOneProject(oneTagObj) setAllTags(shortTagsArray)
