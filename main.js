@@ -22,36 +22,7 @@ function getUniqueOrgIds(targetsArr) {
 }
 
 const uniqueOrgIds = getUniqueOrgIds(targetsArr)
-
-function writeProjectsByOrgJSON(uniqueOrgIds) {
-  const arrayOfPromises = uniqueOrgIds.map((orgID) => {
-    return request
-      .get(`${snykAPIurl}${orgID}/projects`)
-      .set({
-        Authorization: AUTH_TOKEN,
-        'Content-Type': 'application/json',
-      })
-      .then((response) => response.body)
-  })
-
-  return Promise.allSettled(arrayOfPromises).then((result) => {
-    const projectsByOrg = result.map((el) => ({
-      org: el.value.org,
-      projects: el.value.projects,
-    }))
-
-    const projectsByOrgObj = { projectsByOrgArray: projectsByOrg }
-    try {
-      fs.writeFileSync('projectsByOrg.json', JSON.stringify(projectsByOrgObj))
-    } catch (err) {
-      console.error(err)
-    }
-    return projectsByOrgObj
-  })
-}
-
-writeProjectsByOrgJSON(uniqueOrgIds)
-
+console.log(uniqueOrgIds)
 function getProjectsData() {
   return request
     .get(`${snykAPIurl}${ORG_ID}/projects`)
@@ -243,6 +214,8 @@ function logAllProjects(orgID) {
 }
 
 function logAllProjectsByOrg(uniqueOrgIds) {
+  console.log('UOI', uniqueOrgIds)
+  console.log(targetsArr)
   for (const orgID of uniqueOrgIds) {
     console.log(orgID)
     logAllProjects(orgID)
@@ -271,3 +244,11 @@ function logAllProjectsByOrg(uniqueOrgIds) {
 // removeAllTags(tagsArray)
 // removeTag(oneTagObj)
 // writeProjectsData() logOneProject(oneTagObj) setAllTags(shortTagsArray)
+
+module.exports = {
+  uniqueOrgIds,
+  tagsArray,
+  setAllTags,
+  removeAllTags,
+  logAllProjectsByOrg,
+}

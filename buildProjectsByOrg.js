@@ -44,4 +44,6 @@ function writeProjectsByOrgJSON(uniqueOrgIds) {
   })
 }
 
-writeProjectsByOrgJSON(uniqueOrgIds)
+// writeProjectsByOrgJSON(uniqueOrgIds)
+
+module.exports = { writeProjectsByOrgJSON }
