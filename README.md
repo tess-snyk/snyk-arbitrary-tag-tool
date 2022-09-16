@@ -52,6 +52,14 @@ The sample_data directory includes a file named bitbucket-cloud-import-targets.j
 
 ## Run in Demo Mode
 
+1. Create a list of projects to tag:
+
+* Remove projectsByOrg.json if it is in the repo by deleting it. Create Projects list data by running buildProjectsByOrg.js
+
+```
+node buildProjectsByOrg.js
+```
+
 Demo mode requires updating the main.js file to remove comments in the following order
 
 ```
@@ -68,6 +76,10 @@ Demo mode requires updating the main.js file to remove comments in the following
 //Step 3: Remove tags
 //Remove comments from the following line:
 // removeAllTags(tagsArray)
+```
+
+```
+node main.js
 ```
 
 ## Run with CLI tool
