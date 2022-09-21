@@ -23,6 +23,8 @@ See "Limitations"
 NPM
 node.js
 
+Developed and tested with: node v18.9.0, npm 8.19.1
+
 **Environment Configuration**
 
 Set enironment variables .env saved to the .gitignore file. Note, if you choose to manage your API key another way you will still need to create the .env file and add it to .gitignore for this script to run.
@@ -37,7 +39,7 @@ git clone https://github.com/tess-snyk/snyk-arbitrary-tag-tool.git
 ```shell
 cd snyk-arbitrary-tag-tool
 touch .env
-echo "API=<your-api-key>">>.env
+echo "TOKEN=<your-api-key>">>.env
 touch .gitignore
 echo ".env">>.gitignore
 ```
@@ -89,7 +91,11 @@ Work in progress as of 16 Sept 2022
 ## Limitations
 
 * Snyk API rate limit 2000 / minute
+* Developed and tested in node v18.9.0, npm 8.19.1
 * Total unique key:value tags per Group = 1000
 * Dependent on finding an exact match of the intended tag within project name
 * Initially dataset based on recently uploaded projects (to be updated for ongoing operations)
 * Run in demo mode only until this page is updated
+* Work to do for Production Operations Readiness:
+    * buildProjectsByOrg.js over-writes any existing projectsByOrg.json file so there is no manual removal required
+    * 
