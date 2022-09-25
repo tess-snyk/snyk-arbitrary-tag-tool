@@ -1,5 +1,6 @@
 require('dotenv').config()
 const request = require('superagent')
+const axios = require('axios')
 const fs = require('fs')
 
 const snykAPIurl = 'https://api.snyk.io/api/v1/org/'
@@ -22,7 +23,7 @@ function getUniqueOrgIds(targetsArr) {
 }
 
 const uniqueOrgIds = getUniqueOrgIds(targetsArr)
-console.log(uniqueOrgIds)
+
 function getProjectsData() {
   return request
     .get(`${snykAPIurl}${ORG_ID}/projects`)
