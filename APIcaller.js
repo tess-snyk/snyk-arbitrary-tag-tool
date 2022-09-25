@@ -36,8 +36,7 @@ async function logOneProject({ orgID, projectID }) {
     branch: response.data.branch,
     targetReference: response.data.targetReference,
   }
-  console.log(summary)
-  return response.data
+  return summary
 }
 
 async function logAllProjects(tagsArray) {
@@ -47,7 +46,7 @@ async function logAllProjects(tagsArray) {
     allPromises.push(promise)
   }
   const allProjects = await Promise.all(allPromises)
-  console.log(allProjects)
+  console.dir(allProjects, { depth: null })
 }
 
 async function setTag({ orgID, projectID, tagName }) {
@@ -82,6 +81,6 @@ function removeAllTags(tagsArray) {
     removeTag(tagObj)
   }
 }
-setAllTags(tagsArray)
+// setAllTags(tagsArray)
 // removeAllTags(tagsArray)
-// logAllProjects(tagsArray)
+logAllProjects(tagsArray)
