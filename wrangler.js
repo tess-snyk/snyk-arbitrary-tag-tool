@@ -73,4 +73,10 @@ function buildTagsArray(refinedBBData, refinedSnykData) {
 
 const tagsArray = buildTagsArray(refinedBBData, refinedSnykData)
 
-module.exports = { tagsArray }
+function countProjects(snykDataArr) {
+  return snykDataArr.reduce((acc, val) => acc + val.projects.length, 0)
+}
+
+const projectCount = countProjects(snykDataArr)
+
+module.exports = { tagsArray, projectCount }

@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watchAll"
   },
   "repository": {
     "type": "git",
@@ -19,8 +19,14 @@
   "homepage": "https://github.com/tess-snyk/snyk-arbitrary-tag-tool#readme",
   "dependencies": {
     "axios": "^0.27.2",
+    "co": "^4.6.0",
     "dotenv": "^16.0.2",
     "inquirer": "^8.2.4",
     "superagent": "^8.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.3",
+    "superagent-defaults": "^0.1.14",
+    "supertest": "^6.2.4"
   }
 }

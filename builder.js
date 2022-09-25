@@ -9,7 +9,7 @@ const AUTH_TOKEN = process.env.TOKEN
 axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-const targetsArrayJSON = require('./sample_data/bitbucket-cloud-import-targets.json')
+const targetsArrayJSON = require('./sample_data/bitbucket-cloud-import-targets-OLD.json')
 
 targetsArr = targetsArrayJSON.targets
 

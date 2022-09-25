@@ -1,6 +1,7 @@
 require('dotenv').config()
 const axios = require('axios')
 const fs = require('fs')
+const request = require('superagent')
 
 const snykAPIurl = 'https://api.snyk.io/api/v1/org/'
 const ORG_ID = process.env.ORG_ID
@@ -22,10 +23,12 @@ let testObj = {
   tagName: 'thingy-jig',
 }
 //Logging API calls
-async function logOneProject({ orgID, projectID }) {
+
+async function getOneProject({ orgID, projectID }) {
   //TODO: Implement try/catch error handling
   const response = await axios.get(`${snykAPIurl}${orgID}/project/${projectID}`)
   const summary = {
+    orgID: orgID,
     status: response.status,
     projectName: response.data.name,
     tags: response.data.tags,
@@ -42,45 +45,106 @@ async function logOneProject({ orgID, projectID }) {
 async function logAllProjects(tagsArray) {
   const allPromises = []
   for (const tagObj of tagsArray) {
-    const promise = logOneProject(tagObj)
+    const promise = getOneProject(tagObj)
     allPromises.push(promise)
   }
   const allProjects = await Promise.all(allPromises)
   console.dir(allProjects, { depth: null })
+  return allProjects
 }
 
-async function setTag({ orgID, projectID, tagName }) {
-  const payload = { key: 'service', value: tagName }
-  try {
-    const res = await axios.post(
-      `${snykAPIurl}${orgID}/project/${projectID}/tags`,
-      payload
-    )
-  } catch (res) {
-    console.log(res.response.data)
+async function logAllTags(tagsArray) {
+  const allPromises = []
+  for (const tagObj of tagsArray) {
+    const promise = getOneProject(tagObj)
+    allPromises.push(promise)
   }
+  const allProjects = await Promise.all(allPromises)
+  console.dir(allProjects, { depth: null })
+
+  return allProjects
 }
 
-async function removeTag({ orgID, projectID, tagName }) {
-  const payload = { key: 'service', value: tagName }
-  //TODO: IMPLEMENT TRY/CATCH ERROR HANDLING
-  const res = await axios.post(
+// function setTag({ orgID, projectID, tagName }) {
+//   const payload = { key: 'service', value: 'tagName' }
+
+//   const response = axios.post(
+//     `${snykAPIurl}${orgID}/project/${projectID}/tags`,
+//     payload
+//   )
+//   return response
+// }
+
+const base = {
+  Authorization: AUTH_TOKEN,
+  'Content-Type': 'application/json',
+}
+
+function setTag({ orgID, projectID, tagName }) {
+  const payload = { key: 'service', value: 'tagName' }
+
+  const response = request
+    .post(`${snykAPIurl}${orgID}/project/${projectID}/tags`)
+    .set(base)
+    .send(payload)
+
+  return response
+}
+// function setTag({ orgID, projectID, tagName }) {
+//   const payload = { key: 'service', value: 'tagName' }
+
+//   const response = axios.post(
+//     `${snykAPIurl}${orgID}/project/${projectID}/tags`,
+//     payload
+//   )
+//   return response
+// }
+
+function removeTag({ orgID, projectID, tagName }) {
+  const payload = { key: 'service', value: 'tagName' }
+
+  const response = axios.post(
     `${snykAPIurl}${orgID}/project/${projectID}/tags/remove`,
     payload
   )
+  return response
 }
 
-function setAllTags(tagsArray) {
+async function setAllTags(tagsArray) {
+  const allPromises = []
   for (const tagObj of tagsArray) {
-    setTag(tagObj)
+    const promise = new Promise((resolve, reject) => {
+      setTag(tagObj)
+        .then(() => {
+          console.log(response)
+          resolve(response)
+        })
+        .catch((err) => resolve(['fail', tagObj.projectID, err]))
+    })
+    allPromises.push(promise)
   }
+  let results = await Promise.all(allPromises)
+  console.log(results)
 }
 
-function removeAllTags(tagsArray) {
+async function removeAllTags(tagsArray) {
+  const allPromises = []
   for (const tagObj of tagsArray) {
-    removeTag(tagObj)
+    const promise = new Promise((resolve, reject) => {
+      removeTag(tagObj)
+        .then(() => {
+          console.log(response)
+          resolve(response)
+        })
+        .catch((err) => resolve(['fail', tagObj.projectID, err]))
+    })
+    allPromises.push(promise)
   }
+  let results = await Promise.all(allPromises)
+  console.log(results)
 }
-// setAllTags(tagsArray)
+setAllTags(tagsArray)
 // removeAllTags(tagsArray)
-logAllProjects(tagsArray)
+// logAllProjects(tagsArray)
+
+module.exports = { getOneProject, logAllProjects, removeAllTags, setAllTags }
