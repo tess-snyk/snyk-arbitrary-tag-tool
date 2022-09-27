@@ -1,4 +1,4 @@
-require('dotenv').config()
+// require('dotenv').config()
 const axios = require('axios')
 const fs = require('fs')
 const request = require('superagent')
@@ -10,7 +10,7 @@ const AUTH_TOKEN = process.env.TOKEN
 axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-const { tagsArray } = require('./wrangler')
+const { buildTagArraysFromBBDataSnykAPI } = require('./wrangler')
 
 //TEST DATA
 let xORGID = '99692bde-50ab-48e5-bb4a-2f093bac259e'
@@ -27,6 +27,12 @@ let testObj = {
 async function getOneProject({ orgID, projectID }) {
   //TODO: Implement try/catch error handling
   const response = await axios.get(`${snykAPIurl}${orgID}/project/${projectID}`)
+
+  return response
+}
+
+async function logOneProject(getCallResponse) {
+  const response = getCallResponse
   const summary = {
     orgID: orgID,
     status: response.status,
@@ -39,69 +45,59 @@ async function getOneProject({ orgID, projectID }) {
     branch: response.data.branch,
     targetReference: response.data.targetReference,
   }
-  return summary
+  console.log(summary)
 }
 
-async function logAllProjects(tagsArray) {
-  const allPromises = []
-  for (const tagObj of tagsArray) {
-    const promise = getOneProject(tagObj)
-    allPromises.push(promise)
-  }
-  const allProjects = await Promise.all(allPromises)
-  console.dir(allProjects, { depth: null })
-  return allProjects
-}
-
-async function logAllTags(tagsArray) {
-  const allPromises = []
-  for (const tagObj of tagsArray) {
-    const promise = getOneProject(tagObj)
-    allPromises.push(promise)
-  }
-  const allProjects = await Promise.all(allPromises)
-  console.dir(allProjects, { depth: null })
-
-  return allProjects
-}
-
-// function setTag({ orgID, projectID, tagName }) {
-//   const payload = { key: 'service', value: 'tagName' }
-
-//   const response = axios.post(
-//     `${snykAPIurl}${orgID}/project/${projectID}/tags`,
-//     payload
-//   )
-//   return response
+// async function logAllProjects(newTagsArray) {
+//   const allPromises = []
+//   for (const tagObj of newTagsArray) {
+//     const promise = getOneProject(tagObj)
+//     allPromises.push(promise)
+//   }
+//   const allProjects = await Promise.all(allPromises)
+//   console.dir(allProjects, { depth: null })
+//   return allProjects
 // }
 
-const base = {
-  Authorization: AUTH_TOKEN,
-  'Content-Type': 'application/json',
-}
+function setTag({ orgID, projectID, tag }) {
+  const payload = tag
 
-function setTag({ orgID, projectID, tagName }) {
-  const payload = { key: 'service', value: 'tagName' }
-
-  const response = request
-    .post(`${snykAPIurl}${orgID}/project/${projectID}/tags`)
-    .set(base)
-    .send(payload)
-
+  const response = axios.post(
+    `${snykAPIurl}${orgID}/project/${projectID}/tags`,
+    payload
+  )
   return response
 }
-// function setTag({ orgID, projectID, tagName }) {
-//   const payload = { key: 'service', value: 'tagName' }
 
-//   const response = axios.post(
-//     `${snykAPIurl}${orgID}/project/${projectID}/tags`,
-//     payload
-//   )
-//   return response
-// }
+async function forAllTags(
+  func,
+  newTagsArray,
+  logStatusCodes = true,
+  logDetails = false
+) {
+  const allPromises = []
+  for (const tagObj of newTagsArray) {
+    const promise = new Promise((resolve, reject) => {
+      func(tagObj)
+        .then((response) => {
+          resolve([response.status, tagObj.projectID, response])
+        })
+        .catch((err) =>
+          resolve([err.response.status, tagObj.projectID, err.response])
+        )
+    })
+    allPromises.push(promise)
+  }
+  let results = await Promise.all(allPromises)
+  if (logStatusCodes === true) console.dir(results, { depth: 1 })
+  if (logDetails === true) {
+  }
 
-function removeTag({ orgID, projectID, tagName }) {
-  const payload = { key: 'service', value: 'tagName' }
+  return results
+}
+
+function removeTag({ orgID, projectID, tag }) {
+  const payload = tag
 
   const response = axios.post(
     `${snykAPIurl}${orgID}/project/${projectID}/tags/remove`,
@@ -110,41 +106,47 @@ function removeTag({ orgID, projectID, tagName }) {
   return response
 }
 
-async function setAllTags(tagsArray) {
-  const allPromises = []
-  for (const tagObj of tagsArray) {
-    const promise = new Promise((resolve, reject) => {
-      setTag(tagObj)
-        .then(() => {
-          console.log(response)
-          resolve(response)
-        })
-        .catch((err) => resolve(['fail', tagObj.projectID, err]))
-    })
-    allPromises.push(promise)
+async function takeAction(action) {
+  let { newTagsArray, currentTagsArray } =
+    await buildTagArraysFromBBDataSnykAPI()
+  switch (action) {
+    case 'remove':
+      await forAllTags(removeTag, newTagsArray)
+      break
+    case 'set':
+      await forAllTags(setTag, newTagsArray)
+      break
+    case 'removeALL':
+      await forAllTags(removeTag, currentTagsArray)
+      break
+    default:
+      console.log('that is not an option')
   }
-  let results = await Promise.all(allPromises)
-  console.log(results)
+  const tagsBefore = currentTagsArray.length
+  console.log(`Total tags before action: ${tagsBefore}`)
+  ;({ newTagsArray, currentTagsArray } =
+    await buildTagArraysFromBBDataSnykAPI())
+  const tagsAfter = currentTagsArray.length
+  console.log(`Total tags after action: ${tagsAfter}`)
+  const difference = Math.abs(tagsBefore - tagsAfter)
+  console.log(`${difference} tags updated`)
 }
 
-async function removeAllTags(tagsArray) {
-  const allPromises = []
-  for (const tagObj of tagsArray) {
-    const promise = new Promise((resolve, reject) => {
-      removeTag(tagObj)
-        .then(() => {
-          console.log(response)
-          resolve(response)
-        })
-        .catch((err) => resolve(['fail', tagObj.projectID, err]))
-    })
-    allPromises.push(promise)
-  }
-  let results = await Promise.all(allPromises)
-  console.log(results)
-}
-setAllTags(tagsArray)
-// removeAllTags(tagsArray)
-// logAllProjects(tagsArray)
+// takeAction('set')
+// takeAction('remove')
+// takeAction('removeALL')
+// setTags(newTagsArray)
+// removeTags(newTagsArray)
+// logAllProjects(newTagsArray)
+// getOneProject(testObj)
 
-module.exports = { getOneProject, logAllProjects, removeAllTags, setAllTags }
+// TAG APOCALYPSE WARNING WARNING WILL DELETE ALL ALL ALL TAGS IF YOU UNCOMMENT THE LINE BELOW
+// removeTags(currentTagsArray)
+// console.log('newTagsArray', newTagsArray)
+// console.log('newTagsArray length', newTagsArray.length)
+
+// const sample = newTagsArray.filter((obj) => obj.projectName.includes('strawberry'))
+// console.log(sample)
+// console.log('tag Apocalype Array', currentTagsArray)
+
+module.exports = { getOneProject }

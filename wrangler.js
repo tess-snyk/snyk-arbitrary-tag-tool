@@ -1,23 +1,33 @@
 //GET SNYK DATA : "SnykData"
 
 // This code assumes that projectsByOrg.json exists already. Run builder.js to create it.
-const projectsByOrgArrayJSON = require('./projectsByOrg.json')
-snykDataArr = projectsByOrgArrayJSON.projectsByOrgArray
+const {
+  BBDataArr,
+  getAllProjectsByOrgId,
+  uniqueOrgIds,
+} = require('./builder.js')
 
 function getRefinedSnykData(snykDataArr) {
-  const getNameProjIDs = (projectsArr) => {
-    return projectsArr.map((project) => ({
-      name: project.name,
-      projId: project.id,
-    }))
+  const getNameProjIDsTags = (projectsArr) => {
+    return projectsArr.map((project) => {
+      return {
+        name: project.name,
+        projId: project.id,
+        currentTags: project.tags,
+      }
+    })
   }
 
   const refineByOrg = (snykDataArr) => {
-    return snykDataArr.map((orgObj) => ({
-      orgName: orgObj.org.name,
-      orgID: orgObj.org.id,
-      projects: getNameProjIDs(orgObj.projects),
-    }))
+    // console.log(snykDataArr)
+    return snykDataArr.map((orgObj) => {
+      // console.log(orgObj)
+      return {
+        orgName: orgObj.org.name,
+        orgID: orgObj.org.id,
+        projects: getNameProjIDsTags(orgObj.projects),
+      }
+    })
   }
 
   const flatten = (refinedSnykData) => {
@@ -29,6 +39,7 @@ function getRefinedSnykData(snykDataArr) {
           projectID: project.projId,
           orgName: orgObj.orgName,
           orgID: orgObj.orgID,
+          currentTags: project.currentTags,
         }
         flatArr.push(projData)
       })
@@ -39,12 +50,7 @@ function getRefinedSnykData(snykDataArr) {
   return flatten(refineByOrg(snykDataArr))
 }
 
-let refinedSnykData = getRefinedSnykData(snykDataArr)
-
 //GET PROJECT IDs AND TAG DATA from BitBucket : "BBData"
-
-const targetsArrayJSON = require('./sample_data/bitbucket-cloud-import-targets.json')
-BBDataArr = targetsArrayJSON.targets
 
 function getRefinedBBData(BBDataArr) {
   return BBDataArr.map((target) => ({
@@ -53,30 +59,51 @@ function getRefinedBBData(BBDataArr) {
   }))
 }
 
-let refinedBBData = getRefinedBBData(BBDataArr)
-
 // BUILD TAGS ARRAY
 
-function buildTagsArray(refinedBBData, refinedSnykData) {
-  let tagsArray = []
+function buildNewTagsArray(refinedBBData, refinedSnykData) {
+  let newTagsArray = []
   for (let snykObj of refinedSnykData) {
     let BBmatch = refinedBBData.find(
       (BBobj) =>
         BBobj.orgID === snykObj.orgID &&
         snykObj.projectName.includes(BBobj.name)
     )
-    let tagObj = { ...snykObj, tagName: BBmatch.name }
-    tagsArray.push(tagObj)
+    if (BBmatch === undefined) {
+      console.log('No match found for the following object:')
+      console.log('snykObj', snykObj)
+      continue
+    }
+    let tagObj = { ...snykObj, tag: { key: 'service', value: BBmatch.name } }
+    newTagsArray.push(tagObj)
   }
-  return tagsArray
+  return newTagsArray
 }
 
-const tagsArray = buildTagsArray(refinedBBData, refinedSnykData)
-
-function countProjects(snykDataArr) {
-  return snykDataArr.reduce((acc, val) => acc + val.projects.length, 0)
+function buildCurrentTagsArray(refinedSnykData) {
+  let flatArr = []
+  for (const project of refinedSnykData) {
+    // console.log(project)
+    project.currentTags.forEach((tag) => {
+      const projData = {
+        projectID: project.projectID,
+        orgID: project.orgID,
+        tag: tag,
+      }
+      flatArr.push(projData)
+    })
+  }
+  return flatArr
 }
 
-const projectCount = countProjects(snykDataArr)
+async function buildTagArraysFromBBDataSnykAPI() {
+  const snykDataArr = await getAllProjectsByOrgId(uniqueOrgIds)
+  let refinedSnykData = getRefinedSnykData(snykDataArr)
+  let refinedBBData = getRefinedBBData(BBDataArr)
+  const newTagsArray = buildNewTagsArray(refinedBBData, refinedSnykData)
+  const currentTagsArray = buildCurrentTagsArray(refinedSnykData)
 
-module.exports = { tagsArray, projectCount }
+  return (tagArrays = { newTagsArray, currentTagsArray })
+}
+
+module.exports = { buildTagArraysFromBBDataSnykAPI }
