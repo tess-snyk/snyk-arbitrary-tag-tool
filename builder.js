@@ -9,7 +9,7 @@ const AUTH_TOKEN = process.env.TOKEN
 axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-const BBdataArrayJSON = require('./sample_data/test4.json')
+const BBdataArrayJSON = require('./sample_data/test3.json')
 
 BBDataArr = BBdataArrayJSON.targets
 

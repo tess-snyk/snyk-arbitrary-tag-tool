@@ -12,16 +12,6 @@ axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 const { buildTagArraysFromBBDataSnykAPI } = require('./wrangler')
 
-//TEST DATA
-let xORGID = '99692bde-50ab-48e5-bb4a-2f093bac259e'
-let xPROJECTID = '347e7466-4b27-4579-b988-84142f3d69d1'
-
-let testObj = {
-  orgID: xORGID,
-  projectID: xPROJECTID,
-  cat: 'pants',
-  tagName: 'thingy-jig',
-}
 //Logging API calls
 
 async function getOneProject({ orgID, projectID }) {
@@ -119,34 +109,30 @@ async function takeAction(action) {
     case 'removeALL':
       await forAllTags(removeTag, currentTagsArray)
       break
+
+    case 'logONE':
+      await forAllTags(setTag, newTagsArray)
+      const sample = newTagsArray.filter((obj) =>
+        obj.projectName.includes('strawberry')
+      )
+      console.dir(sample, { depth: null })
+      break
     default:
       console.log('that is not an option')
   }
-  const tagsBefore = currentTagsArray.length
-  console.log(`Total tags before action: ${tagsBefore}`)
-  ;({ newTagsArray, currentTagsArray } =
-    await buildTagArraysFromBBDataSnykAPI())
-  const tagsAfter = currentTagsArray.length
-  console.log(`Total tags after action: ${tagsAfter}`)
-  const difference = Math.abs(tagsBefore - tagsAfter)
-  console.log(`${difference} tags updated`)
+  // const tagsBefore = currentTagsArray.length
+  // console.log(`Total tags before action: ${tagsBefore}`)
+  // ;({ newTagsArray, currentTagsArray } =
+  //   await buildTagArraysFromBBDataSnykAPI())
+  // const tagsAfter = currentTagsArray.length
+  // console.log(`Total tags after action: ${tagsAfter}`)
+  // const difference = Math.abs(tagsBefore - tagsAfter)
+  // console.log(`${difference} tags updated`)
 }
 
 // takeAction('set')
 // takeAction('remove')
 // takeAction('removeALL')
-// setTags(newTagsArray)
-// removeTags(newTagsArray)
-// logAllProjects(newTagsArray)
-// getOneProject(testObj)
-
-// TAG APOCALYPSE WARNING WARNING WILL DELETE ALL ALL ALL TAGS IF YOU UNCOMMENT THE LINE BELOW
-// removeTags(currentTagsArray)
-// console.log('newTagsArray', newTagsArray)
-// console.log('newTagsArray length', newTagsArray.length)
-
-// const sample = newTagsArray.filter((obj) => obj.projectName.includes('strawberry'))
-// console.log(sample)
-// console.log('tag Apocalype Array', currentTagsArray)
+takeAction('logONE')
 
 module.exports = { getOneProject }
