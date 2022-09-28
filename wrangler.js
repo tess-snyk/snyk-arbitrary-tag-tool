@@ -64,8 +64,8 @@ function getRefinedBBData(BBDataArr) {
 function buildNewTagsArray(refinedBBData, refinedSnykData) {
   let newTagsArray = []
   for (let snykObj of refinedSnykData) {
-    //Data is sorted to ensure that if there are multiple possible matches, the
-    //longest tag name will be applied. Give two tag names "cat" and "catcher", the
+    // Data is sorted to ensure that if there are multiple possible matches, the
+    // longest tag name will be applied. Give two tag names "cat" and "catcher", the
     // project named "catcher-2022" will be applied the "catcher" tag and NOT
     // the "cat" tag. Only one service tag will be applied to each project.
     sortedRefinedBBData = refinedBBData.sort(

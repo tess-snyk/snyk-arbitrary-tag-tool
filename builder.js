@@ -9,7 +9,7 @@ const AUTH_TOKEN = process.env.TOKEN
 axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-const BBdataArrayJSON = require('./sample_data/test3.json')
+const BBdataArrayJSON = require('./sample_data/test4.json')
 
 BBDataArr = BBdataArrayJSON.targets
 
@@ -21,7 +21,6 @@ function getUniqueOrgIds(BBDataArr) {
 const getProjectByOrgID = async (orgID) => {
   try {
     const response = await axios.get(`${snykAPIurl}${orgID}/projects`)
-    // console.log(response)
     return response.data
   } catch (err) {
     console.log('err')

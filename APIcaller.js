@@ -11,6 +11,11 @@ axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 const { buildTagArraysFromBBDataSnykAPI } = require('./wrangler')
+const {
+  uniqueDataArr,
+  getAllProjectsByOrgId,
+  uniqueOrgIds,
+} = require('./builder')
 
 //Logging API calls
 
@@ -99,19 +104,25 @@ function removeTag({ orgID, projectID, tag }) {
 async function takeAction(action) {
   let { newTagsArray, currentTagsArray } =
     await buildTagArraysFromBBDataSnykAPI()
+  let output
   switch (action) {
     case 'remove':
-      await forAllTags(removeTag, newTagsArray)
+      output = await forAllTags(removeTag, newTagsArray)
       break
     case 'set':
-      await forAllTags(setTag, newTagsArray)
+      output = await forAllTags(setTag, newTagsArray)
       break
     case 'removeALL':
-      await forAllTags(removeTag, currentTagsArray)
+      output = await forAllTags(removeTag, currentTagsArray)
       break
-
+    case 'getALL':
+      output = await getAllProjectsByOrgId(uniqueOrgIds)
+      console.dir(output, {
+        depth: 2,
+      })
+      break
     case 'logONE':
-      await forAllTags(setTag, newTagsArray)
+      output = await forAllTags(setTag, newTagsArray)
       const sample = newTagsArray.filter((obj) =>
         obj.projectName.includes('strawberry')
       )
@@ -120,19 +131,21 @@ async function takeAction(action) {
     default:
       console.log('that is not an option')
   }
-  // const tagsBefore = currentTagsArray.length
-  // console.log(`Total tags before action: ${tagsBefore}`)
-  // ;({ newTagsArray, currentTagsArray } =
-  //   await buildTagArraysFromBBDataSnykAPI())
-  // const tagsAfter = currentTagsArray.length
-  // console.log(`Total tags after action: ${tagsAfter}`)
-  // const difference = Math.abs(tagsBefore - tagsAfter)
-  // console.log(`${difference} tags updated`)
+  const tagsBefore = currentTagsArray.length
+  console.log(`Total tags before action: ${tagsBefore}`)
+  ;({ newTagsArray, currentTagsArray } =
+    await buildTagArraysFromBBDataSnykAPI())
+  const tagsAfter = currentTagsArray.length
+  console.log(`Total tags after action: ${tagsAfter}`)
+  const difference = Math.abs(tagsBefore - tagsAfter)
+  console.log(`${difference} tags updated`)
+  return output
 }
 
 // takeAction('set')
+takeAction('getALL')
 // takeAction('remove')
 // takeAction('removeALL')
-takeAction('logONE')
+// takeAction('logONE')
 
-module.exports = { getOneProject }
+module.exports = { takeAction }

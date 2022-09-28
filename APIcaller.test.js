@@ -1,86 +1,34 @@
-const { removeAllTags, setAllTags } = require('./APIcaller')
-const request = require('supertest')
+// THESE TESTS ARE NOT MOCKED! They act on the actual API and could mess up your actual data.
+// This is a very bad way to do testing. Do not uncomment or run these tests
 
-const snykAPIurl = 'https://api.snyk.io/api/v1/org/'
-const ORG_ID = process.env.ORG_ID
-const AUTH_TOKEN = process.env.TOKEN
-const co = require('co')
+// TODO: Create a mock API for these tests to call.
 
-const { projectCount, tagsArray, tagApocalypseArray } = require('./wrangler')
-const utils = require('./APIutilities')
+// const axios = require('axios')
+// const fs = require('fs')
 
-const base = {
-  Authorization: AUTH_TOKEN,
-  'Content-Type': 'application/json',
-}
+// const { takeAction } = require('./APIcaller')
 
-// axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
-// axios.defaults.headers.common['Content-Type'] = 'application/json'
+// jest.setTimeout(1000000)
 
-//TEST DATA
-let xORGID = '99692bde-50ab-48e5-bb4a-2f093bac259e'
-let xPROJECTID = '347e7466-4b27-4579-b988-84142f3d69d1'
-
-let testObj = {
-  orgID: xORGID,
-  projectID: xPROJECTID,
-  cat: 'pants',
-  tagName: 'thingy-jig',
-}
-
-describe('Snyk API endpoint', () => {
-  test('should return 200 status code', async () => {
-    const response = await request(snykAPIurl)
-      .get(`${xORGID}/project/${xPROJECTID}`)
-      .set(base)
-
-    expect(response.statusCode).toBe(200)
-  })
-})
-
-// {
-//   projectName: 'tess-snyk/tag-demo-service-5(main):terraform/modules/storage/inputs.tf',
-//   projectID: '78a622fc-f148-448b-8709-e968d9cde31e',
-//   orgName: 'Tag-Solution-2',
-//   orgID: '99692bde-50ab-48e5-bb4a-2f093bac259e',
-//   tags: [],
-//   tag: { key: 'service', value: 'tag-demo-service-5' }
-// },
-
-// co(function* () {
-//   yield removeAllTags(tagApocalypseArray)
-
-//   describe('Snyk API endpoint', () => {
-//     test('should return 200 status code', async () => {
-//       const response = await request(snykAPIurl)
-//         .get(`${xORGID}/project/${xPROJECTID}`)
-//         .set(base)
-//       console.log(response.data)
-//       expect(response.statusCode).toBe(200)
-//       return
-//     })
-//   })
-// })
-
-// test('inside co function', async () => {
-//     const response = yield APIcaller.getOneProject(testObj)
-//     console.log(response)
-//     expect(response.statusCode).toBe(200)
+// describe('Reversing actions such as ', () => {
+//   test('set - remove should leave data unchanged', async () => {
+//     await takeAction('removeALL')
+//     const before = await takeAction('getALL')
+//     await takeAction('set')
+//     await takeAction('remove')
+//     const after = await takeAction('getALL')
+//     expect(before).toEqual(after)
+//     return
 //   })
 
-// test('chain requests', async () => {
-
-// }
-
-// import request from "supertest";
-
-// const baseUrl = 'https://jsonplaceholder.typicode.com/';
-
-// describe('Todos endpoint', () => {
-// 	it('should return a 200 status code', async () => {
-// 		const response = await request(baseUrl)
-// 			.get('todos/1');
-
-// 		expect(response.statusCode).toBe(200);
-// 	});
+//   test('remove - set should leave data unchanged', async () => {
+//     await takeAction('removeALL')
+//     const before = await takeAction('getALL')
+//     await takeAction('remove')
+//     await takeAction('set')
+//     await takeAction('remove')
+//     const after = await takeAction('getALL')
+//     expect(before).toEqual(after)
+//     return
+//   })
 // })
