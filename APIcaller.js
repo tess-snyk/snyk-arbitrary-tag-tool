@@ -16,7 +16,7 @@ const {
   getAllProjectsByOrgId,
   uniqueOrgIds,
 } = require('./builder')
-
+const { getUniqueStatusCodes, getActionReport } = require('./APIutilities')
 //Logging API calls
 
 async function getOneProject({ orgID, projectID }) {
@@ -75,16 +75,26 @@ async function forAllTags(
     const promise = new Promise((resolve, reject) => {
       func(tagObj)
         .then((response) => {
-          resolve([response.status, tagObj.projectID, response])
+          resolve({
+            status: response.status,
+            statusText: response.statusText,
+            orgID: tagObj.orgID,
+            projectID: tagObj.projectID,
+          })
         })
         .catch((err) =>
-          resolve([err.response.status, tagObj.projectID, err.response])
+          resolve({
+            status: err.response.status,
+            statusText: err.response.statusText,
+            orgID: tagObj.orgID,
+            projectID: tagObj.projectID,
+          })
         )
     })
     allPromises.push(promise)
   }
   let results = await Promise.all(allPromises)
-  if (logStatusCodes === true) console.dir(results, { depth: 1 })
+  if (logStatusCodes === true) console.dir(results)
   if (logDetails === true) {
   }
 
@@ -139,11 +149,15 @@ async function takeAction(action) {
   console.log(`Total tags after action: ${tagsAfter}`)
   const difference = Math.abs(tagsBefore - tagsAfter)
   console.log(`${difference} tags updated`)
+  console.dir(getActionReport(getUniqueStatusCodes(output), output), {
+    depth: 1,
+  })
+
   return output
 }
 
-// takeAction('set')
-takeAction('getALL')
+takeAction('set')
+// takeAction('getALL')
 // takeAction('remove')
 // takeAction('removeALL')
 // takeAction('logONE')
