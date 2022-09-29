@@ -74,19 +74,26 @@ function setTag({ orgID, projectID, tag }) {
   return response
 }
 
-async function forAllTags(
-  func,
-  tagsArray,
-  logStatusCodes = true,
-  logDetails = false
-) {
+async function forAllTags(func, tagsArray) {
+  if (func === setTag && tagsArray.length === 0) {
+    console.log(`MESSAGE: newTagsArray is empty. There are no new tags to apply. \n
+      Troubleshooting:\n
+      - Check if you have already added the tags. This tool does not make requests to the API for duplicate tags on the same project. \n
+      - Check you are using the correct and most up to date bitbucket-cloud-import-targets.json file.\n
+      Exiting...`)
+    return []
+  } else if (func === removeTag && tagsArray.length === 0) {
+    console.log(`MESSAGE: The tags array is empty. There are no matching tags to remove\n
+    Exiting...`)
+
+    return []
+  }
+
   const allPromises = []
   for (const tagObj of tagsArray) {
     const promise = new Promise((resolve, reject) => {
-      console.log(tagsArray)
       func(tagObj)
         .then((response) => {
-          // console.log(response)
           resolve({
             status: response.status,
             statusText: response.statusText,
@@ -95,7 +102,6 @@ async function forAllTags(
           })
         })
         .catch((err) => {
-          // console.log(err)
           resolve({
             status: err.response.status,
             statusText: err.response.statusText,
@@ -107,10 +113,6 @@ async function forAllTags(
     allPromises.push(promise)
   }
   let results = await Promise.all(allPromises)
-  console.log()
-  // if (logStatusCodes === true) console.dir(results)
-  if (logDetails === true) {
-  }
 
   return results
 }
@@ -129,13 +131,6 @@ async function takeAction(action) {
   let { newTagsArray, newTagsOnlyArray, currentTagsArray } =
     await buildTagArraysFromBBDataSnykAPI()
 
-  if (newTagsOnlyArray.length === 0) {
-    console.log(`newTagsArray list is empty. There are no new tags to apply. \n
-    Troubleshooting:\n
-    - Check if you have already added the tags. This tool does not make requests to the API for duplicate tags on the same project. \n
-    - Check you are using the correct and most up to date bitbucket-cloud-import-targets.json file.\n
-    Exiting...`)
-  }
   let output
   switch (action) {
     //'removeBBtags' removes all tags listed in the bitbucket JSON file
@@ -158,28 +153,36 @@ async function takeAction(action) {
     default:
       console.log('that is not an option')
   }
-  if (output.length > 0) {
-    const tagsBefore = currentTagsArray.length
-    console.log(`Total tags before action: ${tagsBefore}`)
-    ;({ newTagsArray, currentTagsArray } =
-      await buildTagArraysFromBBDataSnykAPI())
-    const tagsAfter = currentTagsArray.length
-    console.log(`Total tags after action: ${tagsAfter}`)
-    const difference = Math.abs(tagsBefore - tagsAfter)
-    console.log(`${difference} tags updated`)
+
+  const logOutputReport = async (output, action) => {
     console.log(
-      `${output.length} requests made for projects in ${uniqueOrgIds.length} orgs`
+      `${output.length} requests made across ${uniqueOrgIds.length} orgs`
     )
     console.dir(getActionReport(getUniqueStatusCodes(output), output), {
       depth: 1,
     })
+
+    if (output.length > 0 && action != 'logALL') {
+      const tagsBefore = currentTagsArray.length
+      console.log(`Total tags before action: ${tagsBefore}`)
+      ;({ newTagsArray, currentTagsArray } =
+        await buildTagArraysFromBBDataSnykAPI())
+      const tagsAfter = currentTagsArray.length
+      console.log(`Total tags after action: ${tagsAfter}`)
+      const difference = tagsAfter - tagsBefore
+      console.log(
+        `${Math.abs(difference)} tags ${difference > 0 ? 'added' : 'removed'}`
+      )
+    }
   }
+
+  logOutputReport(output, action)
   return output
 }
 
-takeAction('set')
+// takeAction('set')
 // takeAction('logALL')
 // takeAction('removeBBtags')
-// takeAction('removeALL')
+takeAction('removeALL')
 
 module.exports = { takeAction }
