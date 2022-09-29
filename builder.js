@@ -21,9 +21,9 @@ function getUniqueOrgIds(BBDataArr) {
 const getProjectByOrgID = async (orgID) => {
   try {
     const response = await axios.get(`${snykAPIurl}${orgID}/projects`)
-    return response.data
+    return response
   } catch (err) {
-    console.log('err')
+    return err.response
   }
 }
 

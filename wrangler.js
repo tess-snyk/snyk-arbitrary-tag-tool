@@ -1,3 +1,16 @@
+// //Override console log to trace more easily
+// const log = console.log
+// console.log = function () {
+//   log.apply(console, arguments)
+//   // Print the stack trace
+//   console.trace()
+// }
+//UTILS:
+
+function subtractSet(A, B) {
+  return A.filter((a) => !B.map((b) => b.id).includes(a.id))
+}
+
 //GET SNYK DATA : "SnykData"
 
 // This code assumes that projectsByOrg.json exists already. Run builder.js to create it.
@@ -7,7 +20,7 @@ const {
   uniqueOrgIds,
 } = require('./builder.js')
 
-function getRefinedSnykData(snykDataArr) {
+function getRefinedSnykData(snykDataArrResponse) {
   const getNameProjIDsTags = (projectsArr) => {
     return projectsArr.map((project) => {
       return {
@@ -18,8 +31,9 @@ function getRefinedSnykData(snykDataArr) {
     })
   }
 
-  const refineByOrg = (snykDataArr) => {
-    // console.log(snykDataArr)
+  const refineByOrg = (snykDataArrResponse) => {
+    const snykDataArr = snykDataArrResponse.map((response) => response.data)
+
     return snykDataArr.map((orgObj) => {
       // console.log(orgObj)
       return {
@@ -47,7 +61,7 @@ function getRefinedSnykData(snykDataArr) {
     return flatArr
   }
 
-  return flatten(refineByOrg(snykDataArr))
+  return flatten(refineByOrg(snykDataArrResponse))
 }
 
 //GET PROJECT IDs AND TAG DATA from BitBucket : "BBData"
@@ -104,18 +118,18 @@ function buildCurrentTagsArray(refinedSnykData) {
 }
 
 async function buildTagArraysFromBBDataSnykAPI() {
-  const snykDataArr = await getAllProjectsByOrgId(uniqueOrgIds)
-  let refinedSnykData = getRefinedSnykData(snykDataArr)
+  const snykDataResponse = await getAllProjectsByOrgId(uniqueOrgIds)
+  // const snykDataArr = snykDataResponse.data
+  let refinedSnykData = getRefinedSnykData(snykDataResponse)
   let refinedBBData = getRefinedBBData(BBDataArr)
   const newTagsArray = buildNewTagsArray(refinedBBData, refinedSnykData)
   const currentTagsArray = buildCurrentTagsArray(refinedSnykData)
-
-  return (tagArrays = { newTagsArray, currentTagsArray })
+  //Subtract tags that have already been applied:
+  newTagsOnlyArray = subtractSet(newTagsArray, currentTagsArray)
+  return (tagArrays = { newTagsArray, newTagsOnlyArray, currentTagsArray })
 }
 
 let refinedBBData = getRefinedBBData(BBDataArr)
 refinedBBData = refinedBBData.sort((a, b) => b.name.length - a.name.length)
-
-console.log(refinedBBData)
 
 module.exports = { buildTagArraysFromBBDataSnykAPI }
