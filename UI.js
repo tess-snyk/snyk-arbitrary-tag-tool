@@ -3,7 +3,6 @@ require('dotenv').config()
 const request = require('superagent')
 const fs = require('fs')
 const main = require('./main')
-const { defaultMaxListeners } = require('events')
 const builder = require('./buildProjectsByOrg')
 
 const projectsByOrgArrayJSON = require('./projectsByOrg.json')
@@ -21,7 +20,7 @@ inquirer
     {
       name: 'main_menu_choice',
       type: 'list',
-      message: 'What would you like to do?',
+      message: '\n\nWhat would you like to do?',
       choices: [
         'View a list of my org IDs',
         'Build/rebuild project list',

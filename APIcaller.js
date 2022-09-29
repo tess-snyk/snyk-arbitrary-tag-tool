@@ -1,4 +1,3 @@
-// require('dotenv').config()
 const axios = require('axios')
 const fs = require('fs')
 const request = require('superagent')
@@ -17,10 +16,8 @@ const {
   uniqueOrgIds,
 } = require('./builder')
 const { getUniqueStatusCodes, getActionReport } = require('./APIutilities')
-//Logging API calls
 
 async function getOneProject({ orgID, projectID }) {
-  //TODO: Implement try/catch error handling
   const response = await axios.get(`${snykAPIurl}${orgID}/project/${projectID}`)
 
   return response
@@ -38,7 +35,6 @@ function logSummary(allProjectsOutput) {
 
 async function logOneProject(getCallResponse, orgID) {
   const response = getCallResponse
-  // console.log('response', response)
   const summary = {
     orgID: orgID,
     projectName: response.name,
@@ -52,17 +48,6 @@ async function logOneProject(getCallResponse, orgID) {
   }
   console.log(summary)
 }
-
-// async function logAllProjects(newTagsArray) {
-//   const allPromises = []
-//   for (const tagObj of newTagsArray) {
-//     const promise = getOneProject(tagObj)
-//     allPromises.push(promise)
-//   }
-//   const allProjects = await Promise.all(allPromises)
-//   console.dir(allProjects, { depth: null })
-//   return allProjects
-// }
 
 function setTag({ orgID, projectID, tag }) {
   const payload = tag
@@ -99,15 +84,26 @@ async function forAllTags(func, tagsArray) {
             statusText: response.statusText,
             orgID: tagObj.orgID,
             projectID: tagObj.projectID,
+            tagObj: tagObj,
           })
         })
         .catch((err) => {
-          resolve({
-            status: err.response.status,
-            statusText: err.response.statusText,
-            orgID: tagObj.orgID,
-            projectID: tagObj.projectID,
-          })
+          try {
+            resolve({
+              status: err.response.status,
+              statusText: err.response.statusText,
+              orgID: tagObj.orgID,
+              projectID: tagObj.projectID,
+              tagObj: tagObj,
+            })
+          } catch {
+            resolve({
+              status: 'client side error. Requests not sent',
+              message: err.message,
+              err: err,
+              tagObj: tagObj,
+            })
+          }
         })
     })
     allPromises.push(promise)
@@ -158,21 +154,25 @@ async function takeAction(action) {
     console.log(
       `${output.length} requests made across ${uniqueOrgIds.length} orgs`
     )
-    console.dir(getActionReport(getUniqueStatusCodes(output), output), {
-      depth: 1,
-    })
 
     if (output.length > 0 && action != 'logALL') {
       const tagsBefore = currentTagsArray.length
       console.log(`Total tags before action: ${tagsBefore}`)
-      ;({ newTagsArray, currentTagsArray } =
-        await buildTagArraysFromBBDataSnykAPI())
-      const tagsAfter = currentTagsArray.length
-      console.log(`Total tags after action: ${tagsAfter}`)
-      const difference = tagsAfter - tagsBefore
-      console.log(
-        `${Math.abs(difference)} tags ${difference > 0 ? 'added' : 'removed'}`
-      )
+      try {
+        ;({ newTagsArray, currentTagsArray } =
+          await buildTagArraysFromBBDataSnykAPI())
+        const tagsAfter = currentTagsArray.length
+        console.log(`Total tags after action: ${tagsAfter}`)
+        const difference = tagsAfter - tagsBefore
+        console.log(
+          `${Math.abs(difference)} tags ${difference > 0 ? 'added' : 'removed'}`
+        )
+        getActionReport(getUniqueStatusCodes(output), output)
+      } catch {
+        console.log(
+          'unable to rebuild tag array for comparison. This could be due to rate limiting'
+        )
+      }
     }
   }
 
@@ -183,6 +183,19 @@ async function takeAction(action) {
 // takeAction('set')
 // takeAction('logALL')
 // takeAction('removeBBtags')
-takeAction('removeALL')
+// takeAction('removeALL')
 
+async function loop() {
+  let more = true
+  while (more === true) {
+    try {
+      await takeAction('set')
+      await takeAction('removeALL')
+    } catch {
+      more = false
+    }
+  }
+}
+
+loop()
 module.exports = { takeAction }
