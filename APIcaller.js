@@ -180,22 +180,22 @@ async function takeAction(action) {
   return output
 }
 
-// takeAction('set')
-// takeAction('logALL')
-// takeAction('removeBBtags')
-// takeAction('removeALL')
+// takeAction('set') // set tags in alignment with bitbucket data
+// takeAction('logALL') // log all projects from snyk database (to check manually if tags have been applied/removed correctly)
+// takeAction('removeBBtags') // remove tags added with the function takeAction("set") - the tags derived from bitbucket data
+// takeAction('removeALL') // remove ALL tags from synk database, including those unrelated to bitbucket data. This cannot be undone.
 
-async function loop() {
-  let more = true
-  while (more === true) {
-    try {
-      await takeAction('set')
-      await takeAction('removeALL')
-    } catch {
-      more = false
-    }
-  }
-}
+// async function loop() {
+//   let more = true
+//   while (more === true) {
+//     try {
+//       await takeAction('set')
+//       await takeAction('removeALL')
+//     } catch {
+//       more = false
+//     }
+//   }
+// }
 
-loop()
+// // loop()
 module.exports = { takeAction }

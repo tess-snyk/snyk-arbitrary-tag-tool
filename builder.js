@@ -10,6 +10,7 @@ axios.defaults.headers.common['Authorization'] = AUTH_TOKEN
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 const BBdataArrayJSON = require('./sample_data/test4.json')
+const { get } = require('superagent')
 
 BBDataArr = BBdataArrayJSON.targets
 
@@ -35,7 +36,7 @@ const getAllProjectsByOrgId = async (orgIDArray) => {
   }
 
   const projectsByOrg = await Promise.all(promiseArray)
-
+  console.log(projectsByOrg[0].data)
   return projectsByOrg
 }
 
