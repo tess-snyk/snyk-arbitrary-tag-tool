@@ -1,6 +1,7 @@
 const axios = require('axios')
 const fs = require('fs')
 const request = require('superagent')
+const readline = require('readline')
 
 const snykAPIurl = 'https://api.snyk.io/api/v1/org/'
 const ORG_ID = process.env.ORG_ID
@@ -180,10 +181,79 @@ async function takeAction(action) {
   return output
 }
 
+// Magic Menu
+
+function cliTagger() {
+  console.log(`
+  The following actions can be performed: \n
+  1. Set tags in alignment with bitbucket data. \n
+  2. Log all projects from snyk database. \n
+  3. Remove previously set tags (performed by action 1). \n
+  4. Remove ALL tags from snyk database, including those unrelated to bitbucket data. PLEASE NOTE: This action cannot be undone.
+  `)
+
+  pressEnter()
+}
+
+cliTagger()
+
+function pressEnter() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+  rl.question(
+    'Which action would you like to perform?',
+    function (actionToPerform) {
+      rl.close()
+      switch (actionToPerform) {
+        case '1':
+          console.log('set')
+          // takeAction('set')
+          cliTagger()
+          break
+        case '2':
+          console.log('logALL')
+          // takeAction('logALL')
+          cliTagger()
+          break
+        case '3':
+          console.log('removeBBtags')
+          // takeAction('removeBBtags')
+          cliTagger()
+          break
+        case '4':
+          const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+          })
+          rl.question(
+            `\x1b[31mThis action will remove ALL Tags (including those unrelated to bitbucket data), are you sure you want to do this? If so, type 'remove' to remove ALL Tags:\x1b[0m `,
+            function (areYouSure) {
+              rl.close()
+              if (areYouSure === 'remove') {
+                console.log('removeALL')
+                // takeAction('removeALL')
+                cliTagger()
+              } else {
+                console.log(`You entered '${areYouSure}' - no tags were removed`)
+                cliTagger()
+              }
+            }
+          )
+          break
+        default:
+          console.log('Sorry, that is not an option, please enter 1, 2, 3 or 4')
+          cliTagger()
+      }
+    }
+  )
+}
+
 // takeAction('set') // set tags in alignment with bitbucket data
 // takeAction('logALL') // log all projects from snyk database (to check manually if tags have been applied/removed correctly)
 // takeAction('removeBBtags') // remove tags added with the function takeAction("set") - the tags derived from bitbucket data
-// takeAction('removeALL') // remove ALL tags from synk database, including those unrelated to bitbucket data. This cannot be undone.
+// takeAction('removeALL') // remove ALL tags from snyk database, including those unrelated to bitbucket data. This cannot be undone.
 
 // async function loop() {
 //   let more = true
