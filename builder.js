@@ -36,7 +36,7 @@ const getAllProjectsByOrgId = async (orgIDArray) => {
   }
 
   const projectsByOrg = await Promise.all(promiseArray)
-  console.log(projectsByOrg[0].data)
+  // console.log(projectsByOrg[0].data)
   return projectsByOrg
 }
 

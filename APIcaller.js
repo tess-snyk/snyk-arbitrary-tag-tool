@@ -1,7 +1,7 @@
 const axios = require('axios')
 const fs = require('fs')
 const request = require('superagent')
-const readline = require('readline')
+const rl = require('readline-sync')
 
 const snykAPIurl = 'https://api.snyk.io/api/v1/org/'
 const ORG_ID = process.env.ORG_ID
@@ -132,6 +132,10 @@ async function takeAction(action) {
   switch (action) {
     //'removeBBtags' removes all tags listed in the bitbucket JSON file
     case 'removeBBtags':
+      if (currentTagsArray.length === 0) {
+        console.log('There are no tags to remove')
+        return
+      }
       output = await forAllTags(removeTag, newTagsArray)
       break
     //'set' applies tags from the bitbucket JSON file that have not already been applied
@@ -140,6 +144,10 @@ async function takeAction(action) {
       break
     // 'removeALL' removes ALL tags currently applied, irrespective of what is in the BB JSON file
     case 'removeALL':
+      if (currentTagsArray.length === 0) {
+        console.log('There are no tags to remove')
+        return
+      }
       output = await forAllTags(removeTag, currentTagsArray)
       break
     // 'logALL' logs all projects to the command line
@@ -151,33 +159,25 @@ async function takeAction(action) {
       console.log('that is not an option')
   }
 
-  const logOutputReport = async (output, action) => {
-    console.log(
-      `${output.length} requests made across ${uniqueOrgIds.length} orgs`
-    )
-
-    if (output.length > 0 && action != 'logALL') {
-      const tagsBefore = currentTagsArray.length
-      console.log(`Total tags before action: ${tagsBefore}`)
-      try {
-        ;({ newTagsArray, currentTagsArray } =
-          await buildTagArraysFromBBDataSnykAPI())
-        const tagsAfter = currentTagsArray.length
-        console.log(`Total tags after action: ${tagsAfter}`)
-        const difference = tagsAfter - tagsBefore
-        console.log(
-          `${Math.abs(difference)} tags ${difference > 0 ? 'added' : 'removed'}`
-        )
-        getActionReport(getUniqueStatusCodes(output), output)
-      } catch {
-        console.log(
-          'unable to rebuild tag array for comparison. This could be due to rate limiting'
-        )
-      }
+  const logOutputReport = async (output, currentTagsArray) => {
+    if (output) {
+      console.log(
+        `${output.length} requests made across ${uniqueOrgIds.length} orgs`
+      )
+    } else {
+      console.log('there is no output to report')
+      return
     }
-  }
 
-  logOutputReport(output, action)
+    if (output.length === 0) return
+
+    getActionReport(getUniqueStatusCodes(output), output)
+  }
+  try {
+    logOutputReport(output, currentTagsArray)
+  } catch {
+    console.log('no output to report')
+  }
   return output
 }
 
@@ -197,59 +197,43 @@ function cliTagger() {
 
 cliTagger()
 
-function pressEnter() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  })
-  rl.question(
-    'Which action would you like to perform?',
-    function (actionToPerform) {
-      rl.close()
-      switch (actionToPerform) {
-        case '1':
-          // console.log('set')
-          takeAction('set')
-          cliTagger()
-          break
-        case '2':
-          // console.log('logALL')
-          takeAction('logALL')
-          cliTagger()
-          break
-        case '3':
-          // console.log('removeBBtags')
-          takeAction('removeBBtags')
-          cliTagger()
-          break
-        case '4':
-          const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-          })
-          rl.question(
-            `\x1b[31mThis action will remove ALL Tags (including those unrelated to bitbucket data), are you sure you want to do this? If so, type 'remove' to remove ALL Tags:\x1b[0m `,
-            function (areYouSure) {
-              rl.close()
-              if (areYouSure === 'remove') {
-                // console.log('removeALL')
-                takeAction('removeALL')
-                cliTagger()
-              } else {
-                console.log(
-                  `You entered '${areYouSure}' - no tags were removed`
-                )
-                cliTagger()
-              }
-            }
-          )
-          break
-        default:
-          console.log('Sorry, that is not an option, please enter 1, 2, 3 or 4')
-          cliTagger()
-      }
-    }
+async function pressEnter() {
+  const actionToPerform = rl.question(
+    'Which action would you like to perform? '
   )
+
+  switch (actionToPerform) {
+    case '1':
+      await takeAction('set')
+
+      break
+    case '2':
+      await takeAction('logALL')
+
+      break
+    case '3':
+      await takeAction('removeBBtags')
+      break
+    case '4':
+      const areYouSure = rl.question(
+        `\x1b[31mThis action will remove ALL Tags (including those
+             unrelated to bitbucket data), are you sure you want to do this? 
+             If so, type 'remove' to remove ALL Tags:\x1b[0m `
+      )
+      if (areYouSure === 'remove') {
+        await takeAction('removeALL')
+      } else {
+        console.log(`You entered '${areYouSure}' - no tags were removed`)
+      }
+
+      break
+    default:
+      console.log(
+        'Sorry, that is not an option. Please type 1, 2, 3 or 4 followed by the enter key.'
+      )
+  }
+  rl.question('Press enter to continue')
+  cliTagger()
 }
 
 // takeAction('set') // set tags in alignment with bitbucket data
@@ -257,18 +241,5 @@ function pressEnter() {
 // takeAction('removeBBtags') // remove tags added with the function takeAction("set") - the tags derived from bitbucket data
 // takeAction('removeALL') // remove ALL tags from snyk database, including those unrelated to bitbucket data. This cannot be undone.
 
-// async function loop() {
-//   let more = true
-//   while (more === true) {
-//     try {
-//       await takeAction('set')
-//       await takeAction('removeALL')
-//     } catch {
-//       more = false
-//     }
-//   }
-// }
-
-// // loop()
 module.exports = { takeAction }
 //
