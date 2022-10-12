@@ -208,18 +208,18 @@ function pressEnter() {
       rl.close()
       switch (actionToPerform) {
         case '1':
-          console.log('set')
-          // takeAction('set')
+          // console.log('set')
+          takeAction('set')
           cliTagger()
           break
         case '2':
-          console.log('logALL')
-          // takeAction('logALL')
+          // console.log('logALL')
+          takeAction('logALL')
           cliTagger()
           break
         case '3':
-          console.log('removeBBtags')
-          // takeAction('removeBBtags')
+          // console.log('removeBBtags')
+          takeAction('removeBBtags')
           cliTagger()
           break
         case '4':
@@ -232,11 +232,13 @@ function pressEnter() {
             function (areYouSure) {
               rl.close()
               if (areYouSure === 'remove') {
-                console.log('removeALL')
-                // takeAction('removeALL')
+                // console.log('removeALL')
+                takeAction('removeALL')
                 cliTagger()
               } else {
-                console.log(`You entered '${areYouSure}' - no tags were removed`)
+                console.log(
+                  `You entered '${areYouSure}' - no tags were removed`
+                )
                 cliTagger()
               }
             }
@@ -269,3 +271,4 @@ function pressEnter() {
 
 // // loop()
 module.exports = { takeAction }
+//
