@@ -1,0 +1,69 @@
+{
+  "targets": [
+    {
+      "target": {
+        "owner": "bbun",
+        "name": "tag-demo-service-1",
+        "branch": "main"
+      },
+      "integrationId": "44a2a871-9ffe-4035-b8be-55e700ba71ee",
+      "orgId": "90b42513-faa5-4085-a5d4-09c52bd65dfb"
+    },
+    { 
+      "target": {
+        "owner": "bbun",
+        "name": "tag-demo-service-2",
+        "branch": "main"
+      },
+      "integrationId": "a12cc3b2-02eb-4f5b-ae7b-51ec13e46ce3",
+      "orgId": "90b42513-faa5-4085-a5d4-09c52bd65dfb"
+    },
+    {
+      "target": {
+        "owner": "bbun",
+        "name": "tag-demo-service-3",
+        "branch": "main"
+      },
+      "integrationId": "a12cc3b2-02eb-4f5b-ae7b-fChUC7wfczFP",
+      "orgId": "90b42513-faa5-4085-a5d4-09c52bd65dfb"
+    },
+    { 
+      "target": {
+        "owner": "bbun",
+        "name": "tag-demo-service-4",
+        "branch": "main"
+      },
+      "integrationId": "a12cc3b2-02eb-4f5b-ae7b-CMRnPFWuVc4wV",
+      "orgId": "99692bde-50ab-48e5-bb4a-2f093bac259e"
+    },
+    {
+      "target": {
+        "owner": "bbun",
+        "name": "tag-demo-service-5",
+        "branch": "main"
+      },
+      "integrationId": "a12cc3b2-02eb-4f5b-ae7b-i8DH2Uvp8pHZ",
+      "orgId": "99692bde-50ab-48e5-bb4a-2f093bac259e"
+    },
+    {
+      "target": {
+        "owner": "bbun",
+        "name": "to-app",
+        "branch": "main"
+      },
+      "integrationId": "a12cc3b2-02eb-4f5b-ae7b-i8DH2Uvp8pHZ",
+      "orgId": "99692bde-50ab-48e5-bb4a-2f093bac259e"
+    },
+    {
+      "target": {
+        "owner": "bbun",
+        "name": "to-strawberry",
+        "branch": "main"
+      },
+      "integrationId": "a12cc3b2-02eb-4f5b-ae7b-i8DH2Uvp8pHZ",
+      "orgId": "99692bde-50ab-48e5-bb4a-2f093bac259e"
+    }
+
+
+  ]
+}
