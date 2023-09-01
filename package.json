@@ -21,7 +21,7 @@
     "axios": "^0.27.2",
     "co": "^4.6.0",
     "dotenv": "^16.0.2",
-    "inquirer": "^8.2.4",
+    "inquirer": "^8.2.6",
     "readline-sync": "^1.4.10",
     "superagent": "^8.0.0"
   },
